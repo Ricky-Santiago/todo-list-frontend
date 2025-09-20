@@ -33,9 +33,12 @@ export const useAuthStore = defineStore('auth', {
      * 3. Actualiza el estado del store
      */
     async login(credentials: { email: string; password: string }) {
+      console.log('🔐 Auth Store: Starting login process', { email: credentials.email }) // Debug log
       this.isLoading = true
       try {
+        console.log('🌐 Auth Store: Making API call to login endpoint') // Debug log
         const response = await authApi.login(credentials)
+        console.log('✅ Auth Store: Login API response received', response) // Debug log
 
         this.token = response.data.token
         this.user = response.data.user
@@ -43,15 +46,20 @@ export const useAuthStore = defineStore('auth', {
         // 💾 Guardar token en localStorage para persistencia
         if (this.token) {
           localStorage.setItem('authToken', this.token)
+          console.log('💾 Auth Store: Token saved to localStorage') // Debug log
         }
 
+        console.log('🎉 Auth Store: Login successful') // Debug log
         return response.data
       } catch (error) {
         // ❌ Manejo de errores
-        console.error('Login error:', error)
+        console.error('❌ Auth Store: Login error:', error)
+
+        // Re-lanzar el error para que el componente lo pueda manejar
         throw error
       } finally {
         this.isLoading = false
+        console.log('🔄 Auth Store: Login process finished') // Debug log
       }
     },
 

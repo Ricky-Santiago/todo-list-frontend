@@ -2,6 +2,8 @@ import axios from 'axios'
 
 const API_URL = import.meta.env.VITE_API_URL
 
+console.log('🔗 API_URL configurada:', API_URL) // Debug log
+
 // Tipos para los parámetros de la API
 interface TaskFilters {
   is_completed?: boolean
@@ -28,24 +30,48 @@ interface UpdateTaskData {
 
 export const api = axios.create({
   baseURL: API_URL,
+  timeout: 10000, // 10 segundos de timeout
+  headers: {
+    'Content-Type': 'application/json',
+  },
 })
 
 // Request interceptor para agregar token
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('authToken')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
-  return config
-})
+api.interceptors.request.use(
+  (config) => {
+    console.log('📤 API Request:', config.method?.toUpperCase(), config.url) // Debug log
+    const token = localStorage.getItem('authToken')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => {
+    console.error('📤 API Request Error:', error) // Debug log
+    return Promise.reject(error)
+  },
+)
 
 // Response interceptor para manejar errores
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('📥 API Response:', response.status, response.config.url) // Debug log
+    return response
+  },
   (error) => {
+    console.error('📥 API Response Error:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      url: error.config?.url,
+      message: error.message,
+    }) // Debug log
+
     if (error.response?.status === 401) {
       localStorage.removeItem('authToken')
-      window.location.href = '/login'
+      // Solo redirigir si no estamos ya en login
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login'
+      }
     }
     return Promise.reject(error)
   },
