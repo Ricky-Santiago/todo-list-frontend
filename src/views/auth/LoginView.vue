@@ -189,7 +189,7 @@ const handleLogin = async (event?: Event) => {
     height: 100vh;
     display: grid;
     place-items: center;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    background: #f8fafc;
     padding: 20px;
     box-sizing: border-box;
     overflow: auto;
@@ -202,25 +202,22 @@ const handleLogin = async (event?: Event) => {
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(circle at 30% 20%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-        radial-gradient(circle at 70% 80%, rgba(255, 107, 107, 0.2) 0%, transparent 50%);
+    background: radial-gradient(circle at 30% 20%, rgba(255, 87, 87, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 70% 80%, rgba(255, 87, 87, 0.05) 0%, transparent 50%);
     pointer-events: none;
 }
 
 .login-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
+    background: #ffffff;
     padding: 3rem;
-    border-radius: 24px;
-    box-shadow:
-        0 25px 50px rgba(0, 0, 0, 0.15),
-        0 0 0 1px rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
     width: 100%;
     max-width: 420px;
     position: relative;
     z-index: 1;
     margin: auto;
-    /* Altura más controlada */
     min-height: 580px;
     display: flex;
     flex-direction: column;
@@ -233,14 +230,10 @@ const handleLogin = async (event?: Event) => {
 }
 
 .login-header h1 {
-    color: #1a1a2e;
+    color: #ff5757;
     margin-bottom: 0.5rem;
     font-size: 2.2rem;
     font-weight: 700;
-    background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
 }
 
 .login-header p {
@@ -280,7 +273,7 @@ input {
     width: 100%;
     padding: 16px 20px;
     border: 2px solid #e5e7eb;
-    border-radius: 12px;
+    border-radius: 8px;
     font-size: 1rem;
     transition: all 0.3s ease;
     background: #ffffff;
@@ -289,8 +282,8 @@ input {
 
 input:focus {
     outline: none;
-    border-color: #0f3460;
-    box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.1);
+    border-color: #ff5757;
+    box-shadow: 0 0 0 3px rgba(255, 87, 87, 0.1);
     transform: translateY(-1px);
 }
 
@@ -333,10 +326,10 @@ input.error {
 .login-button {
     width: 100%;
     padding: 16px;
-    background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+    background: #ff5757;
     color: white;
     border: none;
-    border-radius: 12px;
+    border-radius: 8px;
     font-size: 1.1rem;
     font-weight: 600;
     cursor: pointer;
@@ -361,8 +354,9 @@ input.error {
 }
 
 .login-button:hover:not(:disabled) {
+    background: #ff4444;
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(15, 52, 96, 0.3);
+    box-shadow: 0 10px 25px rgba(255, 87, 87, 0.3);
 }
 
 .login-button:disabled {
@@ -380,14 +374,14 @@ input.error {
 }
 
 .register-link a {
-    color: #0f3460;
+    color: #ff5757;
     text-decoration: none;
     font-weight: 600;
     transition: color 0.3s ease;
 }
 
 .register-link a:hover {
-    color: #1a1a2e;
+    color: #ff4444;
     text-decoration: underline;
 }
 

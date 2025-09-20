@@ -41,26 +41,27 @@ router.beforeEach((to) => {
   const token = localStorage.getItem('authToken')
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth)
 
-  // Si la ruta requiere autenticación y no hay token, ir a login
-  if (requiresAuth && !token) {
+  console.log('🚦 Router Guard:', {
+    to: to.path,
+    token: token ? 'EXISTS' : 'NULL',
+    requiresAuth,
+    tokenLength: token?.length || 0,
+  })
+
+  // 🔒 BLOQUEAR acceso a rutas protegidas sin token válido
+  if (requiresAuth && (!token || token.trim() === '')) {
+    console.log('� BLOCKED: No valid token for protected route, redirecting to login')
     return '/login'
   }
 
-  // Solo redirigir a dashboard si hay token Y si no estás ya intentando hacer logout
-  if ((to.path === '/login' || to.path === '/register') && token) {
-    // Verificar si el token es válido antes de redirigir
-    try {
-      // Si el token existe pero el usuario quiere ir a login explícitamente, permitir
-      if (to.query.force === 'true') {
-        return true
-      }
-      return '/dashboard'
-    } catch {
-      // Si hay error con el token, limpiarlo y permitir ir a login
-      localStorage.removeItem('authToken')
-      return true
-    }
+  // 🏠 Solo redirigir a dashboard desde la ruta raíz si hay token válido
+  if (to.path === '/' && token && token.trim() !== '') {
+    console.log('🏠 Root path with valid token, redirecting to dashboard')
+    return '/dashboard'
   }
+
+  // ✅ Permitir acceso normal a todas las demás rutas
+  console.log('✅ Navigation allowed to:', to.path)
 })
 
 export default router

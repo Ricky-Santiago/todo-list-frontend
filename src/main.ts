@@ -5,13 +5,15 @@ import { createPinia } from 'pinia'
 
 import App from './App.vue'
 import router from './router'
-
-// Limpiar autenticación al iniciar la aplicación para forzar ir a login
-localStorage.removeItem('authToken')
+import { useAuthStore } from './stores/auth.store'
 
 const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
+
+// Inicializar autenticación después de crear la app
+const authStore = useAuthStore()
+authStore.initializeAuth()
 
 app.mount('#app')
