@@ -1,16 +1,16 @@
 <template>
     <div class="login-container">
-        <!-- 🎨 Card contenedora -->
+        <!--  Card contenedora -->
         <div class="login-card">
-            <!-- 📝 Logo y título -->
+            <!--  Logo y título -->
             <div class="login-header">
                 <h1>Todo Daily</h1>
                 <p>Ingresa a tu cuenta</p>
             </div>
 
-            <!-- 📋 Formulario de login -->
+            <!--  Formulario de login -->
             <form @submit.prevent="handleLogin" class="login-form">
-                <!-- 📧 Input Email -->
+                <!--  Input Email -->
                 <div class="form-group">
                     <label for="email">Email</label>
                     <div class="input-wrapper">
@@ -22,7 +22,7 @@
                     </div>
                 </div>
 
-                <!-- 🔐 Input Password -->
+                <!--  Input Password -->
                 <div class="form-group">
                     <label for="password">Contraseña</label>
                     <div class="input-wrapper">
@@ -34,21 +34,21 @@
                     </div>
                 </div>
 
-                <!-- ❌ Mensaje de error general -->
+                <!--  Mensaje de error general -->
                 <div class="general-error-space">
                     <div v-if="errorMessage" class="error-message general-error">
                         {{ errorMessage }}
                     </div>
                 </div>
 
-                <!-- ✅ Botón de submit -->
+                <!--  Botón de submit -->
                 <button type="submit" :disabled="isLoading" class="login-button">
                     <span v-if="isLoading">Cargando...</span>
                     <span v-else>Iniciar Sesión</span>
                 </button>
             </form>
 
-            <!-- 🔗 Link a registro -->
+            <!--  Link a registro -->
             <p class="register-link">
                 ¿No tienes cuenta?
                 <router-link to="/register">Regístrate aquí</router-link>
@@ -62,17 +62,17 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 
-// 🎯 Inicialización
+
 const router = useRouter()
 const authStore = useAuthStore()
 
-// 📊 Estado del formulario
+
 const formData = reactive({
     email: '',
     password: ''
 })
 
-// ⚠️ Estado de errores y loading
+
 const errors = reactive({
     email: '',
     password: ''
@@ -80,9 +80,9 @@ const errors = reactive({
 const errorMessage = ref('')
 const isLoading = ref(false)
 
-// 🔍 Validación de campos
+
 const validateField = (field: keyof typeof formData) => {
-    errors[field] = '' // Resetear error
+    errors[field] = ''
 
     if (field === 'email') {
         if (!formData.email) {
@@ -101,7 +101,7 @@ const validateField = (field: keyof typeof formData) => {
     }
 }
 
-// ✅ Validación completa del formulario
+
 const validateForm = (): boolean => {
     validateField('email')
     validateField('password')
@@ -109,37 +109,37 @@ const validateForm = (): boolean => {
     return !errors.email && !errors.password && !!formData.email && !!formData.password
 }
 
-// 🚀 Manejar envío del formulario
+
 const handleLogin = async (event?: Event) => {
-    // Asegurar que el formulario no se envíe por defecto
+
     if (event) {
         event.preventDefault()
     }
 
-    console.log('Login attempt started') // Debug log
+    console.log('Login attempt started')
     errorMessage.value = ''
 
     if (!validateForm()) {
         errorMessage.value = 'Por favor, completa todos los campos correctamente'
-        console.log('Validation failed', errors) // Debug log
+        console.log('Validation failed', errors)
         return
     }
 
     isLoading.value = true
 
     try {
-        console.log('Calling authStore.login with:', formData) // Debug log
-        // 📡 Llamar al store para hacer login
-        const response = await authStore.login(formData)
-        console.log('Login successful:', response) // Debug log
+        console.log('Calling authStore.login with:', formData)
 
-        // ✅ Redirigir al dashboard si es exitoso
+        const response = await authStore.login(formData)
+        console.log('Login successful:', response)
+
+
         router.push('/dashboard')
 
     } catch (error) {
-        console.error('Login error caught:', error) // Debug log
+        console.error('Login error caught:', error)
 
-        // ❌ Manejar errores de la API de forma más robusta
+
         let errorMsg = 'Error al iniciar sesión'
 
         if (error && typeof error === 'object') {
@@ -154,7 +154,7 @@ const handleLogin = async (event?: Event) => {
                 message?: string
             }
 
-            // Verificar diferentes estructuras de error
+
             if (apiError.response?.data?.message) {
                 errorMsg = apiError.response.data.message
             } else if (apiError.response?.data?.error) {
@@ -171,11 +171,11 @@ const handleLogin = async (event?: Event) => {
         }
 
         errorMessage.value = errorMsg
-        console.log('Error message set to:', errorMsg) // Debug log
+        console.log('Error message set to:', errorMsg)
 
     } finally {
         isLoading.value = false
-        console.log('Login attempt finished') // Debug log
+        console.log('Login attempt finished')
     }
 }
 </script>
@@ -246,7 +246,7 @@ const handleLogin = async (event?: Event) => {
 .form-group {
     margin-bottom: 1.5rem;
     min-height: 108px;
-    /* Reservar espacio para label + input + error message */
+
 }
 
 .input-wrapper {
@@ -255,7 +255,7 @@ const handleLogin = async (event?: Event) => {
 
 .error-space {
     height: 8px;
-    /* Espacio reservado para mensajes de error */
+
     margin-top: 0.5rem;
     display: flex;
     align-items: flex-start;
@@ -297,14 +297,14 @@ input.error {
     font-size: 0.875rem;
     line-height: 1.2;
     min-height: 21px;
-    /* Altura mínima para mantener espacio */
+
     display: block;
     margin: 0;
 }
 
 .general-error-space {
     min-height: 10px;
-    /* Espacio reservado para error general */
+
     margin: 1.5rem 0;
     display: flex;
     align-items: flex-start;
@@ -385,7 +385,7 @@ input.error {
     text-decoration: underline;
 }
 
-/* Responsive design */
+
 @media (max-width: 480px) {
     .login-card {
         padding: 2rem;

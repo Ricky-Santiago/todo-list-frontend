@@ -92,7 +92,7 @@
 import { computed } from 'vue'
 import type { TaskStats } from '@/types/task'
 
-// Props
+
 interface Props {
     stats: TaskStats | null
     loading?: boolean
@@ -102,7 +102,7 @@ const props = withDefaults(defineProps<Props>(), {
     loading: false
 })
 
-// Calcular porcentaje de completado
+
 const completionPercentage = computed(() => {
     if (!props.stats || props.stats.total === 0) return 0
     return Math.round((props.stats.completed / props.stats.total) * 100)

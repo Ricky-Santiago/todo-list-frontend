@@ -25,7 +25,7 @@
 import TaskItem from './TaskItem.vue'
 import type { Task } from '@/types/task'
 
-// Props
+
 interface Props {
     tasks: Task[]
     loading?: boolean
@@ -35,7 +35,7 @@ withDefaults(defineProps<Props>(), {
     loading: false
 })
 
-// Emits
+
 defineEmits<{
     'edit-task': [task: Task]
     'delete-task': [taskId: string]

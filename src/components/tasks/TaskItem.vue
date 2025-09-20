@@ -52,34 +52,34 @@
 import { computed } from 'vue'
 import type { Task } from '@/types/task'
 
-// Props
+
 interface Props {
     task: Task
 }
 
 const props = defineProps<Props>()
 
-// Emits
+
 defineEmits<{
     edit: []
     delete: []
     toggle: []
 }>()
 
-// Labels para prioridades
+
 const priorityLabels = {
     low: 'Baja',
     medium: 'Media',
     high: 'Alta'
 }
 
-// Verificar si la tarea está vencida
+
 const isOverdue = computed(() => {
     if (!props.task.due_date || props.task.is_completed) return false
     return new Date(props.task.due_date) < new Date()
 })
 
-// Formatear fecha
+
 const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString('es-ES', {

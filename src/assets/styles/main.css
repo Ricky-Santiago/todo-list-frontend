@@ -1,9 +1,5 @@
 @import './base.css';
 
-/* Estilos base para la aplicación todo */
-/* Removido #app para evitar conflictos con el centrado */
-
-/* Mantener algunos estilos útiles de Vue */
 a {
   text-decoration: none;
   color: #ff5757;
@@ -18,5 +14,4 @@ a {
 }
 
 @media (min-width: 1024px) {
-  /* Remover estilos que causaban el problema de centrado */
 }

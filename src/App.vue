@@ -7,7 +7,6 @@ import { RouterView } from 'vue-router'
 </script>
 
 <style>
-/* Reset básico */
 * {
   margin: 0;
   padding: 0;
@@ -31,7 +30,7 @@ body {
   position: relative;
 }
 
-/* Asegurar que el html también tenga fondo blanco */
+
 html {
   background-color: #ffffff;
 }

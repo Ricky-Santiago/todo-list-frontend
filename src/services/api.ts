@@ -2,9 +2,8 @@ import axios from 'axios'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-console.log('🔗 API_URL configurada:', API_URL) // Debug log
+console.log('🔗 API_URL configurada:', API_URL)
 
-// Tipos para los parámetros de la API
 interface TaskFilters {
   is_completed?: boolean
   priority?: 'low' | 'medium' | 'high'
@@ -30,16 +29,15 @@ interface UpdateTaskData {
 
 export const api = axios.create({
   baseURL: API_URL,
-  timeout: 10000, // 10 segundos de timeout
+  timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
 })
 
-// Request interceptor para agregar token
 api.interceptors.request.use(
   (config) => {
-    console.log('📤 API Request:', config.method?.toUpperCase(), config.url) // Debug log
+    console.log('📤 API Request:', config.method?.toUpperCase(), config.url)
     const token = localStorage.getItem('authToken')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
@@ -47,15 +45,14 @@ api.interceptors.request.use(
     return config
   },
   (error) => {
-    console.error('📤 API Request Error:', error) // Debug log
+    console.error('📤 API Request Error:', error)
     return Promise.reject(error)
   },
 )
 
-// Response interceptor para manejar errores
 api.interceptors.response.use(
   (response) => {
-    console.log('📥 API Response:', response.status, response.config.url) // Debug log
+    console.log('📥 API Response:', response.status, response.config.url)
     return response
   },
   (error) => {
@@ -64,11 +61,11 @@ api.interceptors.response.use(
       data: error.response?.data,
       url: error.config?.url,
       message: error.message,
-    }) // Debug log
+    })
 
     if (error.response?.status === 401) {
       localStorage.removeItem('authToken')
-      // Solo redirigir si no estamos ya en login
+
       if (!window.location.pathname.includes('/login')) {
         window.location.href = '/login'
       }
@@ -77,7 +74,6 @@ api.interceptors.response.use(
   },
 )
 
-// Servicios específicos de la API
 export const authApi = {
   login: (credentials: { email: string; password: string }) => api.post('/auth/login', credentials),
 

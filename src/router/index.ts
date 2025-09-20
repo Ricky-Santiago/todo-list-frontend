@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-// Importar vistas
 import LoginView from '@/views/auth/LoginView.vue'
 
 const routes = [
@@ -18,13 +17,13 @@ const routes = [
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('@/views/dashboard/DashboardView.vue'),
-    meta: { requiresAuth: true }, // ← Esta ruta requiere autenticación
+    meta: { requiresAuth: true },
   },
   {
     path: '/',
-    redirect: '/login', // Cambiado para redirigir a login por defecto
+    redirect: '/login',
   },
-  // Ruta catch-all para páginas no encontradas
+
   {
     path: '/:pathMatch(.*)*',
     redirect: '/login',
@@ -36,7 +35,6 @@ const router = createRouter({
   routes,
 })
 
-// Guard de navegación para verificar autenticación
 router.beforeEach((to) => {
   const token = localStorage.getItem('authToken')
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth)
@@ -48,19 +46,16 @@ router.beforeEach((to) => {
     tokenLength: token?.length || 0,
   })
 
-  // 🔒 BLOQUEAR acceso a rutas protegidas sin token válido
   if (requiresAuth && (!token || token.trim() === '')) {
     console.log('� BLOCKED: No valid token for protected route, redirecting to login')
     return '/login'
   }
 
-  // 🏠 Solo redirigir a dashboard desde la ruta raíz si hay token válido
   if (to.path === '/' && token && token.trim() !== '') {
     console.log('🏠 Root path with valid token, redirecting to dashboard')
     return '/dashboard'
   }
 
-  // ✅ Permitir acceso normal a todas las demás rutas
   console.log('✅ Navigation allowed to:', to.path)
 })
 

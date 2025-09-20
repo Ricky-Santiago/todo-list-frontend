@@ -4,7 +4,7 @@
             <!-- Logo y título -->
             <div class="header-left">
                 <h1 class="app-title">Todo Daily</h1>
-                <span class="app-subtitle">Organiza tu día</span>
+
             </div>
 
             <!-- Acciones del usuario -->
@@ -28,16 +28,16 @@ import { useAuthStore } from '@/stores/auth.store'
 
 const authStore = useAuthStore()
 
-// Función para manejar el logout
+
 const handleLogout = () => {
-    // Limpiar localStorage PRIMERO para que el router guard no bloquee
+
     localStorage.removeItem('authToken')
 
-    // Limpiar estado del store
+
     authStore.token = null
     authStore.user = null
 
-    // Forzar recarga completa de la página para ir al login
+
     window.location.href = '/login'
 }
 </script>
@@ -72,11 +72,7 @@ const handleLogout = () => {
     color: #ff5757;
 }
 
-.app-subtitle {
-    font-size: 0.9rem;
-    color: #64748b;
-    margin-top: 2px;
-}
+
 
 .header-right {
     display: flex;

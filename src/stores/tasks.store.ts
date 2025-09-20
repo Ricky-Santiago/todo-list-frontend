@@ -2,7 +2,6 @@ import { defineStore } from 'pinia'
 import { tasksApi } from '@/services/api'
 import type { Task, TaskStats } from '@/types/task'
 
-// Definir tipos para los datos de tarea
 interface CreateTaskData {
   title: string
   description?: string
@@ -32,7 +31,6 @@ export const useTasksStore = defineStore('tasks', {
     isLoading: false,
   }),
 
-  // Getters (computadas reactivas)
   getters: {
     completedTasks: (state) => state.tasks.filter((task) => task.is_completed),
     pendingTasks: (state) => state.tasks.filter((task) => !task.is_completed),
@@ -40,11 +38,7 @@ export const useTasksStore = defineStore('tasks', {
       state.tasks.filter((task) => task.priority === priority),
   },
 
-  // Actions (métodos que modifican el estado)
   actions: {
-    /**
-     * 📋 Obtener todas las tareas
-     */
     async fetchTasks() {
       this.isLoading = true
       try {
@@ -59,9 +53,6 @@ export const useTasksStore = defineStore('tasks', {
       }
     },
 
-    /**
-     * 📊 Obtener estadísticas
-     */
     async fetchStats() {
       try {
         const response = await tasksApi.getStats()
@@ -73,9 +64,6 @@ export const useTasksStore = defineStore('tasks', {
       }
     },
 
-    /**
-     * ➕ Crear nueva tarea
-     */
     async createTask(taskData: CreateTaskData) {
       try {
         const response = await tasksApi.createTask(taskData)
@@ -87,9 +75,6 @@ export const useTasksStore = defineStore('tasks', {
       }
     },
 
-    /**
-     * ✏️ Actualizar tarea
-     */
     async updateTask(id: string, taskData: UpdateTaskData) {
       try {
         const response = await tasksApi.updateTask(id, taskData)
@@ -104,21 +89,16 @@ export const useTasksStore = defineStore('tasks', {
       }
     },
 
-    /**
-     * 🔄 Cambiar estado de completado (versión simplificada sin backend)
-     */
     async toggleTask(id: string) {
       try {
         console.log('🔄 Store: Toggling task', id)
 
-        // Encontrar la tarea
         const index = this.tasks.findIndex((task) => task.id === id)
         if (index === -1) {
           console.error('❌ Task not found:', id)
           throw new Error(`Task ${id} not found`)
         }
 
-        // 🎯 Actualización inmediata
         const currentTask = this.tasks[index]
         this.tasks[index] = {
           ...currentTask,
@@ -127,30 +107,20 @@ export const useTasksStore = defineStore('tasks', {
 
         console.log('✅ Store: Task toggled successfully', this.tasks[index])
 
-        // 📊 Actualizar estadísticas localmente
         this.updateStatsLocally()
 
         return this.tasks[index]
-
-        // TODO: Cuando tengas backend funcionando, reemplaza todo lo anterior con:
-        // const response = await tasksApi.toggleTask(id)
-        // this.tasks[index] = response.data
-        // return response.data
       } catch (error) {
         console.error('❌ Store: Error toggling task', error)
         throw error
       }
     },
 
-    /**
-     * 📊 Actualizar estadísticas localmente (helper para version sin backend)
-     */
     updateStatsLocally() {
       const total = this.tasks.length
       const completed = this.tasks.filter((task) => task.is_completed).length
       const pending = total - completed
 
-      // Calcular por prioridad
       const high_priority = this.tasks.filter((task) => task.priority === 'high').length
       const medium_priority = this.tasks.filter((task) => task.priority === 'medium').length
       const low_priority = this.tasks.filter((task) => task.priority === 'low').length
@@ -170,9 +140,6 @@ export const useTasksStore = defineStore('tasks', {
       console.log('📊 Stats updated locally:', this.stats)
     },
 
-    /**
-     * 🗑️ Eliminar tarea
-     */
     async deleteTask(id: string) {
       try {
         await tasksApi.deleteTask(id)

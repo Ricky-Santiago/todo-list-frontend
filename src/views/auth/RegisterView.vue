@@ -1,16 +1,16 @@
 <template>
     <div class="register-container">
-        <!-- 🎨 Card contenedora -->
+        <!--  Card contenedora -->
         <div class="register-card">
-            <!-- 📝 Logo y título -->
+            <!--  Logo y título -->
             <div class="register-header">
                 <h1>Todo Daily</h1>
                 <p>Crea tu cuenta</p>
             </div>
 
-            <!-- 📋 Formulario de registro -->
+            <!--  Formulario de registro -->
             <form @submit.prevent="handleRegister" class="register-form">
-                <!-- 👤 Input Nombre -->
+                <!--  Input Nombre -->
                 <div class="form-group">
                     <label for="first_name">Nombre</label>
                     <div class="input-wrapper">
@@ -22,7 +22,7 @@
                     </div>
                 </div>
 
-                <!-- 👥 Input Apellido -->
+                <!--  Input Apellido -->
                 <div class="form-group">
                     <label for="last_name">Apellido</label>
                     <div class="input-wrapper">
@@ -34,7 +34,7 @@
                     </div>
                 </div>
 
-                <!-- 📧 Input Email -->
+                <!--  Input Email -->
                 <div class="form-group">
                     <label for="email">Email</label>
                     <div class="input-wrapper">
@@ -46,7 +46,7 @@
                     </div>
                 </div>
 
-                <!-- 🔐 Input Password -->
+                <!--  Input Password -->
                 <div class="form-group">
                     <label for="password">Contraseña</label>
                     <div class="input-wrapper">
@@ -58,7 +58,7 @@
                     </div>
                 </div>
 
-                <!-- 🔐 Input Confirmar Password -->
+                <!--  Input Confirmar Password -->
                 <div class="form-group">
                     <label for="password_confirmation">Confirmar Contraseña</label>
                     <div class="input-wrapper">
@@ -68,25 +68,25 @@
                     </div>
                     <div class="error-space">
                         <span v-if="errors.password_confirmation" class="error-message">{{ errors.password_confirmation
-                            }}</span>
+                        }}</span>
                     </div>
                 </div>
 
-                <!-- ❌ Mensaje de error general -->
+                <!--  Mensaje de error general -->
                 <div class="general-error-space">
                     <div v-if="errorMessage" class="error-message general-error">
                         {{ errorMessage }}
                     </div>
                 </div>
 
-                <!-- ✅ Botón de submit -->
+                <!--  Botón de submit -->
                 <button type="submit" :disabled="isLoading" class="register-button">
                     <span v-if="isLoading">Creando cuenta...</span>
                     <span v-else>Crear Cuenta</span>
                 </button>
             </form>
 
-            <!-- 🔗 Link a login -->
+            <!--  Link a login -->
             <p class="login-link">
                 ¿Ya tienes cuenta?
                 <router-link to="/login">Inicia sesión aquí</router-link>
@@ -100,11 +100,11 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 
-// 🎯 Inicialización
+
 const router = useRouter()
 const authStore = useAuthStore()
 
-// 📊 Estado del formulario
+
 const formData = reactive({
     first_name: '',
     last_name: '',
@@ -113,7 +113,7 @@ const formData = reactive({
     password_confirmation: ''
 })
 
-// ❌ Estado de errores
+
 const errors = reactive({
     first_name: '',
     last_name: '',
@@ -122,11 +122,11 @@ const errors = reactive({
     password_confirmation: ''
 })
 
-// 🔄 Estados generales
+
 const isLoading = ref(false)
 const errorMessage = ref('')
 
-// 🔍 Validaciones por campo
+
 const validateField = (field: string) => {
     errors[field as keyof typeof errors] = ''
 
@@ -178,7 +178,7 @@ const validateField = (field: string) => {
     }
 }
 
-// 🔍 Validar todo el formulario
+
 const validateForm = (): boolean => {
     validateField('first_name')
     validateField('last_name')
@@ -189,12 +189,12 @@ const validateForm = (): boolean => {
     return !Object.values(errors).some(error => error !== '')
 }
 
-// 🚀 Manejar registro
+
 const handleRegister = async () => {
     console.log('🚀 Register: Form submitted')
     errorMessage.value = ''
 
-    // Validar formulario
+
     if (!validateForm()) {
         console.log('❌ Register: Form validation failed')
         return
@@ -205,7 +205,7 @@ const handleRegister = async () => {
     try {
         console.log('📤 Register: Calling auth store register')
 
-        // Llamar al store de autenticación
+
         await authStore.register({
             first_name: formData.first_name.trim(),
             last_name: formData.last_name.trim(),
@@ -215,16 +215,16 @@ const handleRegister = async () => {
 
         console.log('✅ Register: Success, redirecting to dashboard')
 
-        // Redirigir al dashboard si el registro fue exitoso
+
         await router.push('/dashboard')
 
     } catch (error) {
         console.error('❌ Register: Error occurred', error)
 
-        // Manejar diferentes tipos de errores
+
         let errorMsg = 'Error al crear la cuenta. Inténtalo de nuevo.'
 
-        // Type assertion para manejar el error de axios
+
         const apiError = error as {
             response?: {
                 data?: { message?: string }
@@ -454,7 +454,7 @@ input.error {
     text-decoration: underline;
 }
 
-/* Responsive design */
+
 @media (max-width: 480px) {
     .register-card {
         padding: 2rem;

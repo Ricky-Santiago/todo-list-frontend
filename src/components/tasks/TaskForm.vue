@@ -64,7 +64,7 @@
 import { reactive, watch } from 'vue'
 import type { Task } from '@/types/task'
 
-// Props
+
 interface Props {
     task?: Task | null
 }
@@ -73,13 +73,13 @@ const props = withDefaults(defineProps<Props>(), {
     task: null
 })
 
-// Emits
+
 const emit = defineEmits<{
     close: []
     save: [taskData: Partial<Task> & { title: string }]
 }>()
 
-// Estado del formulario
+
 const formData = reactive({
     title: '',
     description: '',
@@ -92,7 +92,7 @@ const errors = reactive({
     title: ''
 })
 
-// Cargar datos si estamos editando
+
 watch(() => props.task, (newTask) => {
     if (newTask) {
         formData.title = newTask.title
@@ -110,7 +110,7 @@ watch(() => props.task, (newTask) => {
     }
 }, { immediate: true })
 
-// Validación
+
 const validateForm = (): boolean => {
     errors.title = ''
 
@@ -122,7 +122,7 @@ const validateForm = (): boolean => {
     return true
 }
 
-// Enviar formulario
+
 const submitForm = () => {
     if (!validateForm()) return
 
@@ -135,7 +135,7 @@ const submitForm = () => {
     })
 }
 
-// Cerrar modal
+
 const closeModal = () => {
     emit('close')
 }

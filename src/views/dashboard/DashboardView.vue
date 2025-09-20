@@ -1,13 +1,13 @@
 <template>
     <div class="dashboard-container">
-        <!-- 🎯 Header con logo y user -->
+        <!--  Header con logo y user -->
         <AppHeader />
 
         <div class="dashboard-content">
-            <!-- 📊 Estadísticas -->
+            <!--  Estadísticas -->
             <StatsCards :stats="stats" :loading="loadingStats" />
 
-            <!-- 🎯 Filtros y acciones -->
+            <!--  Filtros y acciones -->
             <div class="dashboard-actions">
                 <div class="filters">
                     <button v-for="filter in filters" :key="filter.value"
@@ -21,11 +21,11 @@
                 </button>
             </div>
 
-            <!-- 📝 Lista de tareas -->
+            <!--  Lista de tareas -->
             <TaskList :tasks="filteredTasks" :loading="loadingTasks" @edit-task="editTask" @delete-task="deleteTask"
                 @toggle-task="toggleTask" />
 
-            <!-- 🎯 Modal para crear/editar tarea -->
+            <!--  Modal para crear/editar tarea -->
             <TaskForm v-if="showForm" :task="editingTask" @close="closeForm" @save="saveTask" />
         </div>
     </div>
@@ -40,24 +40,24 @@ import TaskList from '@/components/tasks/TaskList.vue'
 import TaskForm from '@/components/tasks/TaskForm.vue'
 import type { Task } from '@/types/task'
 
-// 🎯 Stores
+
 const tasksStore = useTasksStore()
 
-// 📊 Estado
+
 const loadingStats = ref(false)
 const loadingTasks = ref(false)
 const activeFilter = ref<'all' | 'completed' | 'pending'>('all')
 const showForm = ref(false)
 const editingTask = ref<Task | null>(null)
 
-// 🎯 Filtros disponibles
+
 const filters = [
     { value: 'all' as const, label: 'Todas' },
     { value: 'completed' as const, label: 'Completadas' },
     { value: 'pending' as const, label: 'Pendientes' }
 ]
 
-// 📊 Computed properties
+
 const stats = computed(() => tasksStore.stats)
 const tasks = computed(() => tasksStore.tasks)
 
@@ -67,7 +67,7 @@ const filteredTasks = computed(() => {
     return tasks.value.filter((t: Task) => !t.is_completed)
 })
 
-// 🚀 Acciones
+
 const setFilter = (filter: 'all' | 'completed' | 'pending') => {
     activeFilter.value = filter
 }
@@ -97,7 +97,7 @@ const saveTask = async (taskData: Partial<Task> & { title: string }) => {
             due_date: taskData.due_date
         })
     }
-    // Actualizar estadísticas después de guardar
+
     await tasksStore.fetchStats()
     closeForm()
 }
@@ -109,7 +109,7 @@ const editTask = (task: Task) => {
 const deleteTask = async (taskId: string) => {
     if (confirm('¿Estás seguro de eliminar esta tarea?')) {
         await tasksStore.deleteTask(taskId)
-        // Actualizar estadísticas después de eliminar
+
         await tasksStore.fetchStats()
     }
 }
@@ -118,12 +118,12 @@ const toggleTask = async (taskId: string) => {
     console.log('🔄 Dashboard: Toggling task', taskId)
     await tasksStore.toggleTask(taskId)
     console.log('✅ Dashboard: Toggle completed')
-    // No necesitamos fetchStats() porque updateStatsLocally() ya lo hace
+
 }
 
-// 📡 Cargar datos al montar el componente
+
 onMounted(async () => {
-    // 🔒 Verificación de seguridad adicional
+
     const token = localStorage.getItem('authToken')
     if (!token || token.trim() === '') {
         console.log('🛑 Dashboard: No valid token found, redirecting to login')
@@ -142,7 +142,7 @@ onMounted(async () => {
         ])
     } catch (error) {
         console.error('Error loading dashboard:', error)
-        // Si hay error cargando datos, podría ser token inválido
+
         const apiError = error as { response?: { status?: number } }
         if (apiError?.response?.status === 401) {
             console.log('🛑 Dashboard: 401 error, token might be invalid')
