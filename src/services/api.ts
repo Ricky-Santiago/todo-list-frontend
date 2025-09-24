@@ -8,6 +8,7 @@ interface TaskFilters {
   is_completed?: boolean
   priority?: 'low' | 'medium' | 'high'
   due_date?: string
+  search?: string
   page?: number
   limit?: number
 }

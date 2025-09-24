@@ -1,7 +1,7 @@
 <template>
     <div class="dashboard-container">
-        <!--  Header con logo y user -->
-        <AppHeader />
+        <!--  Header con logo, búsqueda y user -->
+        <AppHeader :search-query="searchQuery" @search-change="onSearchChange" @search-clear="onSearchClear" />
 
         <div class="dashboard-content">
             <!--  Estadísticas -->
@@ -49,6 +49,8 @@ const loadingTasks = ref(false)
 const activeFilter = ref<'all' | 'completed' | 'pending'>('all')
 const showForm = ref(false)
 const editingTask = ref<Task | null>(null)
+const searchQuery = ref('')
+let searchTimeout: number | null = null
 
 
 const filters = [
@@ -62,14 +64,74 @@ const stats = computed(() => tasksStore.stats)
 const tasks = computed(() => tasksStore.tasks)
 
 const filteredTasks = computed(() => {
-    if (activeFilter.value === 'all') return tasks.value
-    if (activeFilter.value === 'completed') return tasks.value.filter((t: Task) => t.is_completed)
-    return tasks.value.filter((t: Task) => !t.is_completed)
+    let filtered = tasks.value
+
+    // Aplicar filtro por estado
+    if (activeFilter.value === 'completed') {
+        filtered = filtered.filter((t: Task) => t.is_completed)
+    } else if (activeFilter.value === 'pending') {
+        filtered = filtered.filter((t: Task) => !t.is_completed)
+    }
+
+    // Aplicar búsqueda por título
+    if (searchQuery.value.trim()) {
+        const query = searchQuery.value.toLowerCase().trim()
+        filtered = filtered.filter((t: Task) =>
+            t.title.toLowerCase().includes(query)
+        )
+    }
+
+    return filtered
 })
 
 
 const setFilter = (filter: 'all' | 'completed' | 'pending') => {
     activeFilter.value = filter
+}
+
+const onSearchChange = (query: string) => {
+    searchQuery.value = query
+    console.log('🔍 Search changed:', query)
+
+    // Limpiar timeout anterior
+    if (searchTimeout) {
+        clearTimeout(searchTimeout)
+    }
+
+    // Crear nuevo timeout para debounce (500ms)
+    searchTimeout = setTimeout(async () => {
+        if (query.trim()) {
+            try {
+                loadingTasks.value = true
+                await tasksStore.searchTasks(query.trim())
+            } catch (error) {
+                console.error('Error searching tasks:', error)
+            } finally {
+                loadingTasks.value = false
+            }
+        } else {
+            // Si no hay búsqueda, cargar todas las tareas
+            await loadAllTasks()
+        }
+    }, 500) as unknown as number
+}
+
+const onSearchClear = async () => {
+    searchQuery.value = ''
+    console.log('🗑️ Search cleared from header')
+    await loadAllTasks()
+}
+
+// Función auxiliar para cargar todas las tareas
+const loadAllTasks = async () => {
+    try {
+        loadingTasks.value = true
+        await tasksStore.fetchTasks()
+    } catch (error) {
+        console.error('Error loading tasks:', error)
+    } finally {
+        loadingTasks.value = false
+    }
 }
 
 const showTaskForm = (task?: Task) => {
@@ -133,12 +195,11 @@ onMounted(async () => {
 
     console.log('✅ Dashboard: Valid token found, loading data')
     loadingStats.value = true
-    loadingTasks.value = true
 
     try {
         await Promise.all([
             tasksStore.fetchStats(),
-            tasksStore.fetchTasks()
+            loadAllTasks()
         ])
     } catch (error) {
         console.error('Error loading dashboard:', error)
@@ -151,7 +212,6 @@ onMounted(async () => {
         }
     } finally {
         loadingStats.value = false
-        loadingTasks.value = false
     }
 })
 </script>
@@ -212,6 +272,10 @@ onMounted(async () => {
 }
 
 @media (max-width: 768px) {
+    .dashboard-content {
+        padding: 2rem 1rem;
+    }
+
     .dashboard-actions {
         flex-direction: column;
         align-items: stretch;

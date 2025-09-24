@@ -39,10 +39,14 @@ export const useTasksStore = defineStore('tasks', {
   },
 
   actions: {
-    async fetchTasks() {
+    async fetchTasks(filters?: {
+      search?: string
+      is_completed?: boolean
+      priority?: 'low' | 'medium' | 'high'
+    }) {
       this.isLoading = true
       try {
-        const response = await tasksApi.getTasks()
+        const response = await tasksApi.getTasks(filters)
         this.tasks = response.data
         return response.data
       } catch (error) {
@@ -61,6 +65,20 @@ export const useTasksStore = defineStore('tasks', {
       } catch (error) {
         console.error('Error fetching stats:', error)
         throw error
+      }
+    },
+
+    async searchTasks(query: string) {
+      this.isLoading = true
+      try {
+        const response = await tasksApi.getTasks({ search: query })
+        this.tasks = response.data
+        return response.data
+      } catch (error) {
+        console.error('Error searching tasks:', error)
+        throw error
+      } finally {
+        this.isLoading = false
       }
     },
 
