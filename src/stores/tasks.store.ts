@@ -21,6 +21,7 @@ interface TasksState {
   tasks: Task[]
   stats: TaskStats | null
   isLoading: boolean
+  toggleLoading: Set<string> // IDs de tareas que están siendo toggle
 }
 
 export const useTasksStore = defineStore('tasks', {
@@ -29,6 +30,7 @@ export const useTasksStore = defineStore('tasks', {
     tasks: [],
     stats: null,
     isLoading: false,
+    toggleLoading: new Set(),
   }),
 
   getters: {
@@ -36,6 +38,7 @@ export const useTasksStore = defineStore('tasks', {
     pendingTasks: (state) => state.tasks.filter((task) => !task.is_completed),
     tasksByPriority: (state) => (priority: 'low' | 'medium' | 'high') =>
       state.tasks.filter((task) => task.priority === priority),
+    isToggling: (state) => (taskId: string) => state.toggleLoading.has(taskId),
   },
 
   actions: {
@@ -109,28 +112,32 @@ export const useTasksStore = defineStore('tasks', {
 
     async toggleTask(id: string) {
       try {
-        console.log('🔄 Store: Toggling task', id)
+        // Agregar al loading state
+        this.toggleLoading.add(id)
 
+        // Llamar directamente al backend
+        const response = await tasksApi.toggleTask(id)
+
+        // Actualizar la tarea en el store con la respuesta del backend
         const index = this.tasks.findIndex((task) => task.id === id)
-        if (index === -1) {
-          console.error('❌ Task not found:', id)
-          throw new Error(`Task ${id} not found`)
+        if (index !== -1) {
+          // Crear nuevo objeto para la tarea
+          const updatedTask = { ...response.data }
+
+          // Crear nuevo array con la tarea actualizada
+          this.tasks = [...this.tasks.slice(0, index), updatedTask, ...this.tasks.slice(index + 1)]
         }
 
-        const currentTask = this.tasks[index]
-        this.tasks[index] = {
-          ...currentTask,
-          is_completed: !currentTask.is_completed,
-        }
-
-        console.log('✅ Store: Task toggled successfully', this.tasks[index])
-
+        // Actualizar estadísticas localmente
         this.updateStatsLocally()
 
-        return this.tasks[index]
+        return response.data
       } catch (error) {
-        console.error('❌ Store: Error toggling task', error)
+        console.error('Error toggling task:', error)
         throw error
+      } finally {
+        // Remover del loading state
+        this.toggleLoading.delete(id)
       }
     },
 
@@ -154,8 +161,6 @@ export const useTasksStore = defineStore('tasks', {
         upcoming_tasks: 0,
         completion_rate: total > 0 ? Math.round((completed / total) * 100) : 0,
       }
-
-      console.log('📊 Stats updated locally:', this.stats)
     },
 
     async deleteTask(id: string) {

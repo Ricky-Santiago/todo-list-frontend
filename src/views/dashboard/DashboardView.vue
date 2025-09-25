@@ -61,30 +61,33 @@ const filters = [
 
 
 const stats = computed(() => tasksStore.stats)
-const tasks = computed(() => tasksStore.tasks)
 
 const filteredTasks = computed(() => {
-    let filtered = tasks.value
+    const allTasks = tasksStore.tasks
+
+    if (!allTasks || allTasks.length === 0) {
+        return []
+    }
+
+    let result = allTasks
 
     // Aplicar filtro por estado
     if (activeFilter.value === 'completed') {
-        filtered = filtered.filter((t: Task) => t.is_completed)
+        result = result.filter(task => task.is_completed)
     } else if (activeFilter.value === 'pending') {
-        filtered = filtered.filter((t: Task) => !t.is_completed)
+        result = result.filter(task => !task.is_completed)
     }
 
     // Aplicar búsqueda por título
-    if (searchQuery.value.trim()) {
+    if (searchQuery.value && searchQuery.value.trim()) {
         const query = searchQuery.value.toLowerCase().trim()
-        filtered = filtered.filter((t: Task) =>
-            t.title.toLowerCase().includes(query)
+        result = result.filter(task =>
+            task.title.toLowerCase().includes(query)
         )
     }
 
-    return filtered
+    return result
 })
-
-
 const setFilter = (filter: 'all' | 'completed' | 'pending') => {
     activeFilter.value = filter
 }
@@ -177,10 +180,17 @@ const deleteTask = async (taskId: string) => {
 }
 
 const toggleTask = async (taskId: string) => {
-    console.log('🔄 Dashboard: Toggling task', taskId)
-    await tasksStore.toggleTask(taskId)
-    console.log('✅ Dashboard: Toggle completed')
+    try {
+        console.log('🔄 Dashboard: Starting toggle for task', taskId)
 
+        // Toggle task con backend
+        await tasksStore.toggleTask(taskId)
+
+        console.log('✅ Dashboard: Toggle completed successfully')
+
+    } catch (error) {
+        console.error('❌ Dashboard: Error in toggle task', error)
+    }
 }
 
 
@@ -201,6 +211,7 @@ onMounted(async () => {
             tasksStore.fetchStats(),
             loadAllTasks()
         ])
+
     } catch (error) {
         console.error('Error loading dashboard:', error)
 

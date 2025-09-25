@@ -37,11 +37,14 @@
 
         <!-- Footer con checkbox -->
         <div class="task-footer">
-            <label class="task-checkbox" :class="{ completed: task.is_completed }">
-                <input type="checkbox" :checked="task.is_completed" @change="$emit('toggle')" />
-                <span class="checkbox-custom"></span>
+            <label class="task-checkbox" :class="{ completed: task.is_completed, loading: isToggling }">
+                <input type="checkbox" :checked="task.is_completed" :disabled="isToggling" @change="$emit('toggle')" />
+                <span class="checkbox-custom" :class="{ loading: isToggling }">
+                    <span v-if="isToggling" class="loading-spinner"></span>
+                </span>
                 <span class="checkbox-label">
-                    {{ task.is_completed ? 'Completada' : 'Marcar como completada' }}
+                    <span v-if="isToggling">Actualizando...</span>
+                    <span v-else>{{ task.is_completed ? 'Completada' : 'Marcar como completada' }}</span>
                 </span>
             </label>
         </div>
@@ -50,7 +53,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useTasksStore } from '@/stores/tasks.store'
 import type { Task } from '@/types/task'
+
+const tasksStore = useTasksStore()
 
 
 interface Props {
@@ -72,6 +78,9 @@ const priorityLabels = {
     medium: 'Media',
     high: 'Alta'
 }
+
+// Loading state para toggle
+const isToggling = computed(() => tasksStore.isToggling(props.task.id))
 
 
 const isOverdue = computed(() => {
@@ -250,6 +259,31 @@ const formatDate = (dateString: string) => {
     justify-content: center;
     transition: all 0.2s;
     background: white;
+    position: relative;
+}
+
+.checkbox-custom.loading {
+    border-color: #ff5757;
+    background: #fff5f5;
+}
+
+.loading-spinner {
+    width: 12px;
+    height: 12px;
+    border: 2px solid #ff5757;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .task-checkbox input:checked+.checkbox-custom {
@@ -271,5 +305,18 @@ const formatDate = (dateString: string) => {
 
 .task-checkbox.completed .checkbox-label {
     color: #6b7280;
+}
+
+.task-checkbox.loading {
+    pointer-events: none;
+}
+
+.task-checkbox.loading .checkbox-label {
+    color: #ff5757;
+    font-style: italic;
+}
+
+.task-checkbox input:disabled {
+    cursor: not-allowed;
 }
 </style>
