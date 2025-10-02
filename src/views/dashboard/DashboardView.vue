@@ -9,11 +9,42 @@
 
             <!--  Filtros y acciones -->
             <div class="dashboard-actions">
-                <div class="filters">
-                    <button v-for="filter in filters" :key="filter.value"
-                        :class="{ active: activeFilter === filter.value }" @click="setFilter(filter.value)">
-                        {{ filter.label }}
-                    </button>
+                <div class="filters-section">
+                    <!-- Filtros por estado -->
+                    <div class="filter-group">
+                        <label class="filter-label">Estado:</label>
+                        <div class="filters">
+                            <button v-for="filter in statusFilters" :key="filter.value"
+                                :class="{ active: activeFilter === filter.value }" @click="setFilter(filter.value)">
+                                {{ filter.label }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filtros por prioridad -->
+                    <div class="filter-group">
+                        <label class="filter-label">Prioridad:</label>
+                        <div class="filters">
+                            <button v-for="priority in priorityFilters" :key="priority.value"
+                                :class="{ active: activePriorityFilter === priority.value }"
+                                @click="setPriorityFilter(priority.value)">
+                                <span :class="priority.class">{{ priority.icon }}</span>
+                                {{ priority.label }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filtros por fecha -->
+                    <div class="filter-group">
+                        <label class="filter-label">Fecha:</label>
+                        <div class="filters">
+                            <button v-for="dateFilter in dateFilters" :key="dateFilter.value"
+                                :class="{ active: activeDateFilter === dateFilter.value }"
+                                @click="setDateFilter(dateFilter.value)">
+                                {{ dateFilter.icon }} {{ dateFilter.label }}
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <button class="add-task-btn" @click="showNewTaskForm">
@@ -34,6 +65,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useTasksStore } from '@/stores/tasks.store'
+import { useToastStore } from '@/stores/toast.store'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import StatsCards from '@/components/tasks/StatsCards.vue'
 import TaskList from '@/components/tasks/TaskList.vue'
@@ -42,21 +74,40 @@ import type { Task } from '@/types/task'
 
 
 const tasksStore = useTasksStore()
-
+const toastStore = useToastStore()
 
 const loadingStats = ref(false)
 const loadingTasks = ref(false)
 const activeFilter = ref<'all' | 'completed' | 'pending'>('all')
+const activePriorityFilter = ref<'all' | 'low' | 'medium' | 'high'>('all')
+const activeDateFilter = ref<'all' | 'today' | 'week' | 'overdue' | 'upcoming'>('all')
 const showForm = ref(false)
 const editingTask = ref<Task | null>(null)
 const searchQuery = ref('')
 let searchTimeout: number | null = null
 
 
-const filters = [
+const statusFilters = [
     { value: 'all' as const, label: 'Todas' },
     { value: 'completed' as const, label: 'Completadas' },
     { value: 'pending' as const, label: 'Pendientes' }
+]
+
+
+const priorityFilters = [
+    { value: 'all' as const, label: 'Todas', icon: '📋', class: 'priority-all' },
+    { value: 'high' as const, label: 'Alta', icon: '🔴', class: 'priority-high' },
+    { value: 'medium' as const, label: 'Media', icon: '🟡', class: 'priority-medium' },
+    { value: 'low' as const, label: 'Baja', icon: '🟢', class: 'priority-low' }
+]
+
+
+const dateFilters = [
+    { value: 'all' as const, label: 'Todas', icon: '📅' },
+    { value: 'today' as const, label: 'Hoy', icon: '⏰' },
+    { value: 'week' as const, label: 'Esta semana', icon: '📆' },
+    { value: 'overdue' as const, label: 'Vencidas', icon: '🚨' },
+    { value: 'upcoming' as const, label: 'Próximas', icon: '⏳' }
 ]
 
 
@@ -71,14 +122,48 @@ const filteredTasks = computed(() => {
 
     let result = allTasks
 
-    // Aplicar filtro por estado
+
     if (activeFilter.value === 'completed') {
         result = result.filter(task => task.is_completed)
     } else if (activeFilter.value === 'pending') {
         result = result.filter(task => !task.is_completed)
     }
 
-    // Aplicar búsqueda por título
+
+    if (activePriorityFilter.value !== 'all') {
+        result = result.filter(task => task.priority === activePriorityFilter.value)
+    }
+
+
+    if (activeDateFilter.value !== 'all') {
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        const weekFromNow = new Date(today)
+        weekFromNow.setDate(today.getDate() + 7)
+
+        result = result.filter(task => {
+            if (!task.due_date) return activeDateFilter.value === 'upcoming'
+
+            const dueDate = new Date(task.due_date)
+            dueDate.setHours(0, 0, 0, 0)
+
+            switch (activeDateFilter.value) {
+                case 'today':
+                    return dueDate.getTime() === today.getTime()
+                case 'week':
+                    return dueDate >= today && dueDate <= weekFromNow
+                case 'overdue':
+                    return dueDate < today && !task.is_completed
+                case 'upcoming':
+                    return dueDate > weekFromNow
+                default:
+                    return true
+            }
+        })
+    }
+
+
     if (searchQuery.value && searchQuery.value.trim()) {
         const query = searchQuery.value.toLowerCase().trim()
         result = result.filter(task =>
@@ -92,16 +177,24 @@ const setFilter = (filter: 'all' | 'completed' | 'pending') => {
     activeFilter.value = filter
 }
 
+const setPriorityFilter = (priority: 'all' | 'low' | 'medium' | 'high') => {
+    activePriorityFilter.value = priority
+}
+
+const setDateFilter = (dateFilter: 'all' | 'today' | 'week' | 'overdue' | 'upcoming') => {
+    activeDateFilter.value = dateFilter
+}
+
 const onSearchChange = (query: string) => {
     searchQuery.value = query
     console.log('🔍 Search changed:', query)
 
-    // Limpiar timeout anterior
+
     if (searchTimeout) {
         clearTimeout(searchTimeout)
     }
 
-    // Crear nuevo timeout para debounce (500ms)
+
     searchTimeout = setTimeout(async () => {
         if (query.trim()) {
             try {
@@ -113,7 +206,7 @@ const onSearchChange = (query: string) => {
                 loadingTasks.value = false
             }
         } else {
-            // Si no hay búsqueda, cargar todas las tareas
+
             await loadAllTasks()
         }
     }, 500) as unknown as number
@@ -125,7 +218,7 @@ const onSearchClear = async () => {
     await loadAllTasks()
 }
 
-// Función auxiliar para cargar todas las tareas
+
 const loadAllTasks = async () => {
     try {
         loadingTasks.value = true
@@ -152,19 +245,27 @@ const closeForm = () => {
 }
 
 const saveTask = async (taskData: Partial<Task> & { title: string }) => {
-    if (editingTask.value) {
-        await tasksStore.updateTask(editingTask.value.id, taskData)
-    } else {
-        await tasksStore.createTask({
-            title: taskData.title,
-            description: taskData.description,
-            priority: taskData.priority || 'medium',
-            due_date: taskData.due_date
-        })
-    }
+    try {
+        if (editingTask.value) {
+            await tasksStore.updateTask(editingTask.value.id, taskData)
+            toastStore.success('Tarea actualizada correctamente', '✏️ Tarea editada')
+        } else {
+            await tasksStore.createTask({
+                title: taskData.title,
+                description: taskData.description,
+                priority: taskData.priority || 'medium',
+                due_date: taskData.due_date
+            })
+            toastStore.success('Nueva tarea creada exitosamente', '➕ Tarea creada')
+        }
 
-    await tasksStore.fetchStats()
-    closeForm()
+        await tasksStore.fetchStats()
+        closeForm()
+    } catch (error) {
+        console.error('Error saving task:', error)
+        const action = editingTask.value ? 'actualizar' : 'crear'
+        toastStore.error(`Error al ${action} la tarea`, '❌ Error')
+    }
 }
 
 const editTask = (task: Task) => {
@@ -173,9 +274,14 @@ const editTask = (task: Task) => {
 
 const deleteTask = async (taskId: string) => {
     if (confirm('¿Estás seguro de eliminar esta tarea?')) {
-        await tasksStore.deleteTask(taskId)
-
-        await tasksStore.fetchStats()
+        try {
+            await tasksStore.deleteTask(taskId)
+            await tasksStore.fetchStats()
+            toastStore.success('Tarea eliminada correctamente', '🗑️ Tarea eliminada')
+        } catch (error) {
+            console.error('Error deleting task:', error)
+            toastStore.error('Error al eliminar la tarea', '❌ Error')
+        }
     }
 }
 
@@ -183,13 +289,22 @@ const toggleTask = async (taskId: string) => {
     try {
         console.log('🔄 Dashboard: Starting toggle for task', taskId)
 
-        // Toggle task con backend
-        await tasksStore.toggleTask(taskId)
+
+        const updatedTask = await tasksStore.toggleTask(taskId)
+
+
+        const message = updatedTask.is_completed
+            ? 'Tarea marcada como completada'
+            : 'Tarea marcada como pendiente'
+        const title = updatedTask.is_completed ? '✅ Completada' : '⏳ Pendiente'
+
+        toastStore.success(message, title, 3000)
 
         console.log('✅ Dashboard: Toggle completed successfully')
 
     } catch (error) {
         console.error('❌ Dashboard: Error in toggle task', error)
+        toastStore.error('Error al cambiar el estado de la tarea', '❌ Error')
     }
 }
 
@@ -242,14 +357,35 @@ onMounted(async () => {
 .dashboard-actions {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     margin: 2rem 0;
+    gap: 2rem;
+}
+
+.filters-section {
+    display: flex;
+    flex-direction: column;
     gap: 1rem;
+    flex: 1;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.filter-label {
+    font-weight: 600;
+    color: #374151;
+    min-width: 80px;
+    font-size: 0.875rem;
 }
 
 .filters {
     display: flex;
     gap: 0.5rem;
+    flex-wrap: wrap;
 }
 
 .filters button {
@@ -259,12 +395,37 @@ onMounted(async () => {
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.3s;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.filters button:hover {
+    border-color: #ff5757;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .filters button.active {
     background: #ff5757;
     color: white;
     border-color: #ff5757;
+}
+
+.priority-all {
+    color: #6b7280;
+}
+
+.priority-high {
+    color: #dc2626;
+}
+
+.priority-medium {
+    color: #f59e0b;
+}
+
+.priority-low {
+    color: #16a34a;
 }
 
 .add-task-btn {
@@ -290,10 +451,26 @@ onMounted(async () => {
     .dashboard-actions {
         flex-direction: column;
         align-items: stretch;
+        gap: 1.5rem;
+    }
+
+    .filter-group {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+
+    .filter-label {
+        min-width: auto;
+        text-align: center;
     }
 
     .filters {
         justify-content: center;
+    }
+
+    .filters button {
+        padding: 0.75rem 1rem;
     }
 }
 </style>

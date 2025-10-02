@@ -19,7 +19,11 @@
             <div class="header-right">
                 <!-- Información del usuario -->
                 <div class="user-info">
-                    <span class="user-greeting">Hola, Usuario</span>
+                    <div class="user-avatar">👤</div>
+                    <div class="user-text">
+                        <span class="user-greeting">{{ userGreeting }}</span>
+
+                    </div>
                 </div>
 
                 <!-- Botón de logout -->
@@ -32,10 +36,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 
-// Props y emits
+
 interface Props {
     searchQuery?: string
 }
@@ -51,15 +55,30 @@ const emit = defineEmits<{
 
 const authStore = useAuthStore()
 
-// Estado local para el input
+
+const userGreeting = computed(() => {
+    const user = authStore.currentUser
+    if (user?.first_name) {
+
+        if (user.last_name) {
+            return `HOLA, ${user.first_name} ${user.last_name}`
+        }
+
+        return `Hola, ${user.first_name}`
+    }
+
+    return authStore.isLoading ? 'Cargando...' : 'Hola, Usuario'
+})
+
+
 const searchQuery = ref(props.searchQuery)
 
-// Sincronizar con props
+
 watch(() => props.searchQuery, (newValue) => {
     searchQuery.value = newValue
 })
 
-// Funciones
+
 const handleSearch = () => {
     emit('search-change', searchQuery.value)
 }
@@ -182,6 +201,25 @@ const handleLogout = () => {
 
 .user-info {
     display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    background: #ff5757;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.user-text {
+    display: flex;
     flex-direction: column;
     align-items: flex-end;
 }
@@ -189,6 +227,14 @@ const handleLogout = () => {
 .user-greeting {
     font-size: 0.9rem;
     color: #374151;
+    font-weight: 600;
+    margin: 0;
+}
+
+.user-email {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin: 0;
 }
 
 .logout-button {
@@ -228,8 +274,14 @@ const handleLogout = () => {
         gap: 0.5rem;
     }
 
-    .user-greeting {
+    .user-text {
         display: none;
+    }
+
+    .user-avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 1rem;
     }
 
     .logout-button {

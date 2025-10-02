@@ -14,8 +14,10 @@
                 <div class="form-group">
                     <label for="email">Email</label>
                     <div class="input-wrapper">
-                        <input id="email" v-model="formData.email" type="email" placeholder="tu@email.com"
-                            :class="{ 'error': errors.email }" @blur="validateField('email')" />
+                        <input id="email" v-model="formData.email" type="email" placeholder="tu@email.com" :class="{
+                            'error': errors.email,
+                            'valid': formData.email && !errors.email && /\S+@\S+\.\S+/.test(formData.email)
+                        }" @input="validateField('email')" @blur="validateField('email')" />
                     </div>
                     <div class="error-space">
                         <span v-if="errors.email" class="error-message">{{ errors.email }}</span>
@@ -26,8 +28,10 @@
                 <div class="form-group">
                     <label for="password">Contraseña</label>
                     <div class="input-wrapper">
-                        <input id="password" v-model="formData.password" type="password" placeholder="••••••••"
-                            :class="{ 'error': errors.password }" @blur="validateField('password')" />
+                        <input id="password" v-model="formData.password" type="password" placeholder="••••••••" :class="{
+                            'error': errors.password,
+                            'valid': formData.password && !errors.password && formData.password.length >= 6
+                        }" @input="validateField('password')" @blur="validateField('password')" />
                     </div>
                     <div class="error-space">
                         <span v-if="errors.password" class="error-message">{{ errors.password }}</span>
@@ -61,10 +65,12 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
+import { useToastStore } from '@/stores/toast.store'
 
 
 const router = useRouter()
 const authStore = useAuthStore()
+const toastStore = useToastStore()
 
 
 const formData = reactive({
@@ -134,6 +140,11 @@ const handleLogin = async (event?: Event) => {
         console.log('Login successful:', response)
 
 
+        toastStore.success(
+            `¡Bienvenido de vuelta, ${response.user.first_name}!`,
+            '🎉 Inicio de sesión exitoso'
+        )
+
         router.push('/dashboard')
 
     } catch (error) {
@@ -171,6 +182,7 @@ const handleLogin = async (event?: Event) => {
         }
 
         errorMessage.value = errorMsg
+        toastStore.error(errorMsg, '❌ Error de inicio de sesión')
         console.log('Error message set to:', errorMsg)
 
     } finally {
@@ -290,6 +302,11 @@ input:focus {
 input.error {
     border-color: #ef4444;
     box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+input.valid {
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
 .error-message {

@@ -14,8 +14,10 @@
                 <div class="form-group">
                     <label for="first_name">Nombre</label>
                     <div class="input-wrapper">
-                        <input id="first_name" v-model="formData.first_name" type="text" placeholder="Tu nombre"
-                            :class="{ 'error': errors.first_name }" @blur="validateField('first_name')" />
+                        <input id="first_name" v-model="formData.first_name" type="text" placeholder="Tu nombre" :class="{
+                            'error': errors.first_name,
+                            'valid': formData.first_name && !errors.first_name && formData.first_name.trim().length >= 2
+                        }" @input="validateField('first_name')" @blur="validateField('first_name')" />
                     </div>
                     <div class="error-space">
                         <span v-if="errors.first_name" class="error-message">{{ errors.first_name }}</span>
@@ -26,8 +28,10 @@
                 <div class="form-group">
                     <label for="last_name">Apellido</label>
                     <div class="input-wrapper">
-                        <input id="last_name" v-model="formData.last_name" type="text" placeholder="Tu apellido"
-                            :class="{ 'error': errors.last_name }" @blur="validateField('last_name')" />
+                        <input id="last_name" v-model="formData.last_name" type="text" placeholder="Tu apellido" :class="{
+                            'error': errors.last_name,
+                            'valid': formData.last_name && !errors.last_name && formData.last_name.trim().length >= 2
+                        }" @input="validateField('last_name')" @blur="validateField('last_name')" />
                     </div>
                     <div class="error-space">
                         <span v-if="errors.last_name" class="error-message">{{ errors.last_name }}</span>
@@ -38,8 +42,10 @@
                 <div class="form-group">
                     <label for="email">Email</label>
                     <div class="input-wrapper">
-                        <input id="email" v-model="formData.email" type="email" placeholder="tu@email.com"
-                            :class="{ 'error': errors.email }" @blur="validateField('email')" />
+                        <input id="email" v-model="formData.email" type="email" placeholder="tu@email.com" :class="{
+                            'error': errors.email,
+                            'valid': formData.email && !errors.email && /\S+@\S+\.\S+/.test(formData.email)
+                        }" @input="validateField('email')" @blur="validateField('email')" />
                     </div>
                     <div class="error-space">
                         <span v-if="errors.email" class="error-message">{{ errors.email }}</span>
@@ -50,8 +56,10 @@
                 <div class="form-group">
                     <label for="password">Contraseña</label>
                     <div class="input-wrapper">
-                        <input id="password" v-model="formData.password" type="password" placeholder="••••••••"
-                            :class="{ 'error': errors.password }" @blur="validateField('password')" />
+                        <input id="password" v-model="formData.password" type="password" placeholder="••••••••" :class="{
+                            'error': errors.password,
+                            'valid': formData.password && !errors.password && formData.password.length >= 8
+                        }" @input="validateField('password')" @blur="validateField('password')" />
                     </div>
                     <div class="error-space">
                         <span v-if="errors.password" class="error-message">{{ errors.password }}</span>
@@ -63,12 +71,15 @@
                     <label for="password_confirmation">Confirmar Contraseña</label>
                     <div class="input-wrapper">
                         <input id="password_confirmation" v-model="formData.password_confirmation" type="password"
-                            placeholder="••••••••" :class="{ 'error': errors.password_confirmation }"
+                            placeholder="••••••••" :class="{
+                                'error': errors.password_confirmation,
+                                'valid': formData.password_confirmation && !errors.password_confirmation && formData.password_confirmation === formData.password
+                            }" @input="validateField('password_confirmation')"
                             @blur="validateField('password_confirmation')" />
                     </div>
                     <div class="error-space">
                         <span v-if="errors.password_confirmation" class="error-message">{{ errors.password_confirmation
-                        }}</span>
+                            }}</span>
                     </div>
                 </div>
 
@@ -99,10 +110,12 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
+import { useToastStore } from '@/stores/toast.store'
 
 
 const router = useRouter()
 const authStore = useAuthStore()
+const toastStore = useToastStore()
 
 
 const formData = reactive({
@@ -216,6 +229,11 @@ const handleRegister = async () => {
         console.log('✅ Register: Success, redirecting to dashboard')
 
 
+        toastStore.success(
+            `¡Cuenta creada exitosamente! Bienvenido, ${formData.first_name}!`,
+            '🎉 Registro exitoso'
+        )
+
         await router.push('/dashboard')
 
     } catch (error) {
@@ -243,6 +261,7 @@ const handleRegister = async () => {
         }
 
         errorMessage.value = errorMsg
+        toastStore.error(errorMsg, '❌ Error de registro')
         console.log('Error message set to:', errorMsg)
 
     } finally {
@@ -360,6 +379,11 @@ input:focus {
 input.error {
     border-color: #ef4444;
     box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+input.valid {
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
 .error-message {

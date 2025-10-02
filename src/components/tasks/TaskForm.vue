@@ -10,16 +10,32 @@
                 <!-- Título -->
                 <div class="form-group">
                     <label for="title">Título *</label>
-                    <input id="title" v-model="formData.title" type="text" placeholder="Escribe el título de la tarea"
-                        :class="{ error: errors.title }" required />
-                    <span v-if="errors.title" class="error-message">{{ errors.title }}</span>
+                    <div class="input-wrapper">
+                        <input id="title" v-model="formData.title" type="text"
+                            placeholder="Escribe el título de la tarea" :class="{
+                                error: errors.title,
+                                valid: formData.title.trim().length >= 3 && !errors.title
+                            }" required />
+                        <div class="field-info">
+                            <span v-if="errors.title" class="error-message">{{ errors.title }}</span>
+                            <span v-if="formData.title" class="char-count"
+                                :class="{ warning: formData.title.length > 80 }">
+                                {{ formData.title.length }}/100 caracteres
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Descripción -->
                 <div class="form-group">
                     <label for="description">Descripción</label>
                     <textarea id="description" v-model="formData.description" placeholder="Describe la tarea (opcional)"
-                        rows="3"></textarea>
+                        rows="3" :class="{ error: errors.description }"></textarea>
+                    <span v-if="errors.description" class="error-message">{{ errors.description }}</span>
+                    <span v-if="formData.description" class="char-count"
+                        :class="{ warning: formData.description.length > 400 }">
+                        {{ formData.description.length }}/500 caracteres
+                    </span>
                 </div>
 
                 <!-- Prioridad -->
@@ -35,7 +51,8 @@
                 <!-- Fecha límite -->
                 <div class="form-group">
                     <label for="due_date">Fecha límite</label>
-                    <input id="due_date" v-model="formData.due_date" type="date" />
+                    <input id="due_date" v-model="formData.due_date" type="date" :class="{ error: errors.due_date }" />
+                    <span v-if="errors.due_date" class="error-message">{{ errors.due_date }}</span>
                 </div>
 
                 <!-- Estado (solo para editar) -->
@@ -89,7 +106,9 @@ const formData = reactive({
 })
 
 const errors = reactive({
-    title: ''
+    title: '',
+    description: '',
+    due_date: ''
 })
 
 
@@ -101,7 +120,7 @@ watch(() => props.task, (newTask) => {
         formData.due_date = newTask.due_date || ''
         formData.is_completed = newTask.is_completed
     } else {
-        // Reset form para nueva tarea
+
         formData.title = ''
         formData.description = ''
         formData.priority = 'medium'
@@ -111,16 +130,58 @@ watch(() => props.task, (newTask) => {
 }, { immediate: true })
 
 
-const validateForm = (): boolean => {
-    errors.title = ''
 
+const validateTitle = () => {
     if (!formData.title.trim()) {
         errors.title = 'El título es requerido'
-        return false
+    } else if (formData.title.trim().length < 3) {
+        errors.title = 'El título debe tener al menos 3 caracteres'
+    } else if (formData.title.length > 100) {
+        errors.title = 'El título no puede exceder 100 caracteres'
+    } else {
+        errors.title = ''
     }
-
-    return true
 }
+
+
+const validateDescription = () => {
+    if (formData.description && formData.description.length > 500) {
+        errors.description = 'La descripción no puede exceder 500 caracteres'
+    } else {
+        errors.description = ''
+    }
+}
+
+
+const validateDueDate = () => {
+    if (formData.due_date) {
+        const selectedDate = new Date(formData.due_date)
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        if (selectedDate < today) {
+            errors.due_date = 'La fecha límite no puede ser anterior a hoy'
+        } else {
+            errors.due_date = ''
+        }
+    } else {
+        errors.due_date = ''
+    }
+}
+
+
+const validateForm = (): boolean => {
+    validateTitle()
+    validateDescription()
+    validateDueDate()
+
+    return !errors.title && !errors.description && !errors.due_date
+}
+
+
+watch(() => formData.title, validateTitle)
+watch(() => formData.description, validateDescription)
+watch(() => formData.due_date, validateDueDate)
 
 
 const submitForm = () => {
@@ -242,15 +303,43 @@ select:focus {
     box-shadow: 0 0 0 3px rgba(255, 87, 87, 0.1);
 }
 
-input.error {
+input.error,
+textarea.error {
     border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+input.valid {
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.field-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+    min-height: 16px;
 }
 
 .error-message {
     color: #ef4444;
     font-size: 12px;
-    margin-top: 4px;
-    display: block;
+    font-weight: 500;
+}
+
+.char-count {
+    color: #6b7280;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.char-count.warning {
+    color: #f59e0b;
 }
 
 textarea {

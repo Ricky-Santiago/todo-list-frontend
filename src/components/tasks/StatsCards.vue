@@ -69,9 +69,7 @@
                     <span class="stat-mini-label">Baja prioridad:</span>
                     <span class="stat-mini-value">{{ stats.low_priority || 0 }}</span>
                 </div>
-            </div>
 
-            <div class="stat-row">
                 <div class="stat-item">
                     <span class="stat-mini-icon">🚨</span>
                     <span class="stat-mini-label">Vencidas:</span>
@@ -207,7 +205,7 @@ const completionPercentage = computed(() => {
     border-radius: 3px;
 }
 
-/* Colores específicos por tipo */
+
 .stat-card.total {
     border-left: 4px solid #ff5757;
 }
@@ -235,7 +233,8 @@ const completionPercentage = computed(() => {
 .stat-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 1.5rem;
+    justify-content: space-between;
+    gap: 1rem;
     margin-bottom: 1rem;
 }
 
@@ -247,7 +246,9 @@ const completionPercentage = computed(() => {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    flex: 1;
+    min-width: fit-content;
 }
 
 .stat-mini-icon {
@@ -282,7 +283,13 @@ const completionPercentage = computed(() => {
 
     .stat-row {
         flex-direction: column;
-        gap: 1rem;
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+
+    .stat-item {
+        font-size: 0.8rem;
+        min-width: auto;
     }
 }
 
