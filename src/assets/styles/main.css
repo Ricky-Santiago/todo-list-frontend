@@ -1,0 +1,17 @@
+@import './base.css';
+
+a {
+  text-decoration: none;
+  color: #ff5757;
+  transition: 0.3s;
+}
+
+@media (hover: hover) {
+  a:hover {
+    color: #ff4444;
+    text-decoration: underline;
+  }
+}
+
+@media (min-width: 1024px) {
+}
